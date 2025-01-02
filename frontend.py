@@ -1,7 +1,13 @@
 import streamlit as st
 from PIL import Image
+import tensorflow as tf
+from tensorflow.keras.preprocessing import image
+import numpy as np
 
 st.set_page_config(layout="wide")
+
+# Load the trained model
+model = tf.keras.models.load_model('your_trained_model.h5') # Replace with your trained model's path
 
 # Define a function to display the sidebar
 def display_sidebar():
@@ -24,11 +30,17 @@ def display_main_content():
         if uploaded_file is not None:
             image = Image.open(uploaded_file)
             st.image(image, caption="Uploaded Image", width=300)
-            # Your prediction code here
-            # Example:
-            # prediction = model.predict(image)
-            # st.write("Prediction:", prediction)
 
-# Call the functions to display the sidebar and main content
-display_sidebar()
-display_main_content()
+            # Preprocess the image
+            image = image.convert('RGB') # Ensure image has 3 channels (RGB)
+            image = image.resize((224, 224)) # Resize to match model input size
+            image = np.array(image) / 255.0 # Normalize pixel values
+            image = np.expand_dims(image, axis=0) # Add batch dimension
+
+            # Make prediction using the model
+            prediction = model.predict(image)
+
+            # Get the class label with the highest probability
+            predicted_class = np.argmax(prediction)
+
+            
